@@ -142,7 +142,6 @@ s_stats <- function() {
   ## create new stat
   df$gdp_per_capita <- df$gdp/df$population
 
-
   ## plot showing relations between various states' statistics
   gg <- ggarrange(ggarrange(ggplot(df) + geom_point(aes(x = df$population, y = df$area, colour = factor(df$region))) + labs(title = 'The Relation Between State Population, Area, and Region', x = 'Population', y = 'Area (square mi.)', colour = 'Region'), ggplot(df) + geom_smooth(aes(x = df$gdp_per_capita, y = df$crime_rate, colour = factor(df$region))) + labs(title = 'The Relation Between GDP Per Capita, Crime Rate, and Region', x = 'GDP Per Capita', y = 'Crime Rate', colour = 'Region'), ncol = 2, nrow = 1, widths = c(48,48), heights = c(24,24)), ggarrange(ggplot(df) + geom_smooth(aes(x = df$density, y = df$crime_rate, colour = factor(df$region))) + labs(title = 'The Relation Between Density, Crime Rate, and Region', x = 'Density', y = 'Crime Rate', colour = 'Region'), ggplot(df) + geom_smooth(aes(x = df$population, y = df$crime_rate, colour = factor(df$region))) + labs(title = 'The Relation Between Population, Crime Rate, and Region', x = 'Population', y = 'Crime Rate', colour = 'Region'), ncol = 2, nrow = 1, widths = c(48,48), heights = c(24,24)), ncol = 1, nrow = 2, widths = c(48,48), heights = c(48,48))
   
