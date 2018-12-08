@@ -1,0 +1,203 @@
+---
+title: "STAT 184 Final" 
+author: "Khoi Tran" 
+date: "December 5, 2018" 
+output: html_document 
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(echo = TRUE)
+
+## web scraping function
+s_stats <- function() { 
+  library(rvest)
+  library(data.table)
+  library(dplyr) 
+  library(tidyr) 
+  library(ggplot2) 
+  library(reshape2) 
+  library(stringr) 
+  library(DBI)
+  library(tibble)
+  library(ggpubr)
+  library(broom)
+  
+  s_name <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- gsub(' \\W\\S{0,4}\\s?state\\W', '', as.character(read_html(toString(df[i,1])) %>% html_nodes(xpath = '//div/h1[@id = "firstHeading"]') %>% html_text()))
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  
+  s_size_rank <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.numeric(read_html(toString(df[i,1])) %>% html_nodes('table') %>% .[[1]] %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//th[@scope][text() = "Area"]/following-sibling::td/a') %>% html_text() %>% str_extract('\\d+'))
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  
+  s_area <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.numeric(gsub(",", "", read_html(toString(df[i,1])) %>% html_nodes('table') %>% .[[1]] %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//th[@scope][text() = "Area"]/ancestor::tr/following-sibling::tr[1]/td') %>% html_text() %>% str_extract('[:digit:]{0,3}[:punct:]{0,1}[:digit:]{0,3}')))
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  
+  s_pop_rank <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.numeric(read_html(toString(df[i,1])) %>% html_nodes('table') %>% .[[1]] %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//th[@scope][text() = "Population"]/following-sibling::td/a') %>% html_text() %>% str_extract('[:digit:]{1,2}'))
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  
+  s_pop <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.numeric(gsub(",", "", read_html(toString(df[i,1])) %>% html_nodes('table') %>% .[[1]] %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//th[@scope][text() = "Population"]/ancestor::tr/following-sibling::tr[1]/td/text()[1]') %>% html_text() %>% str_extract('\\S+'), perl = TRUE))
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  
+  s_cap <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.character(read_html(toString(df[i,1])) %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//a[contains(@href, "capital")]/ancestor::th/following-sibling::td/a') %>% html_text())
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  
+  s_l_city <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.character(read_html(toString(df[i,1])) %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//a[contains(@href, "largest_cities")]/ancestor::th/following-sibling::td/a') %>% html_text())
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  
+  s_dens_rank <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.numeric(read_html(toString(df[i,1])) %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//td/a[contains(@href, "population_density")]') %>% html_text() %>% str_extract('[:digit:]{1,2}'))
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  
+  s_dens <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.numeric(read_html(toString(df[i,1])) %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//th[@scope]/a[text() = "Density"]/ancestor::tr/td/text()[1]') %>% html_text() %>% str_extract('[:digit:]{1,3}[.]?[:digit:]{1,2}'))
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  url <- 'https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States'
+  df1 <- paste('https://en.wikipedia.org', as.character(read_html(url) %>% html_nodes('table') %>% .[[1]] %>% html_nodes(xpath = '//table[contains(@class, "sortable")][1]//tr//th[@scope = "row"][1]//a[contains(@href, "wiki")]') %>% html_attr('href')), sep = "")
+  
+  df <- data.frame('links' = df1)
+  df$state <- s_name(df)
+  df$size_rank <- s_size_rank(df)
+  df$area <- s_area(df)
+  df$population_rank <- s_pop_rank(df)
+  df$population <- s_pop(df)
+  df$capital <- s_cap(df)
+  df$largest_city <- s_l_city(df)
+  
+  ## create new stats
+  df$density_rank <- s_dens_rank(df)
+  df$density <- s_dens(df)
+  
+  ## crime rate data per state to merge with
+  ## https://www.statista.com/statistics/200445/reported-violent-crime-rate-in-the-us-states/
+  ## trimmed data set in Excel for ease of import
+  library(readr)
+  df2 <- read_csv("state_crime_r.csv")
+  
+  ## wikipedia table of GDP per state
+  url1 <- 'https://en.wikipedia.org/wiki/List_of_U.S._states_and_territories_by_GDP'
+  df3 <-read_html(url1) %>% html_nodes(xpath = '//table[contains(@class, "sortable")][1]') %>% html_table(fill = TRUE)
+  df3 <- df3[[1]]
+  df3 <- df3[-1,]
+  df3 <- df3[,-2]
+  colnames(df3) <- c('gdp_rank', 'state', 'gdp', 'p_national_gdp', 'region')
+  df3$gdp <- as.numeric(gsub(",", "", df3$gdp))*1000000
+  
+  df2 <- merge(df2, df3, by = 'state')
+  df <- merge(df, df2, by = 'state')
+  
+  ## create new stat
+  df$gdp_per_capita <- df$gdp/df$population
+
+
+  ## plot showing relations between various states' statistics
+  gg <- ggarrange(ggarrange(ggplot(df) + geom_point(aes(x = df$population, y = df$area, colour = factor(df$region))) + labs(title = 'The Relation Between State Population, Area, and Region', x = 'Population', y = 'Area (square mi.)', colour = 'Region'), ggplot(df) + geom_smooth(aes(x = df$gdp_per_capita, y = df$crime_rate, colour = factor(df$region))) + labs(title = 'The Relation Between GDP Per Capita, Crime Rate, and Region', x = 'GDP Per Capita', y = 'Crime Rate', colour = 'Region'), ncol = 2, nrow = 1, widths = c(48,48), heights = c(24,24)), ggarrange(ggplot(df) + geom_smooth(aes(x = df$density, y = df$crime_rate, colour = factor(df$region))) + labs(title = 'The Relation Between Density, Crime Rate, and Region', x = 'Density', y = 'Crime Rate', colour = 'Region'), ggplot(df) + geom_smooth(aes(x = df$population, y = df$crime_rate, colour = factor(df$region))) + labs(title = 'The Relation Between Population, Crime Rate, and Region', x = 'Population', y = 'Crime Rate', colour = 'Region'), ncol = 2, nrow = 1, widths = c(48,48), heights = c(24,24)), ncol = 1, nrow = 2, widths = c(48,48), heights = c(48,48))
+  
+  ## observing scatterplots that show relationships between variables
+  pairs(~df$crime_rate + df$gdp_per_capita + df$density + df$population + df$area + df$gdp)
+  
+  ## regressions
+  
+  ## what's the difference between high population and high density (population over area)?
+  lm_crime_gdppc <- lm(df$crime_rate ~ df$gdp_per_capita)
+  lm_crime_gdp <- lm(df$crime_rate ~ df$gdp)
+  
+  ## what's the difference between high GDP and high GDP per capita (income equality)?
+  lm_crime_gdppc_r <- lm(df$crime_rate ~ df$gdp_per_capita + factor(df$region))
+  lm_crime_gdp_r <- lm(df$crime_rate ~ df$gdp + factor(df$region))
+  lm_crime_dens_r <- lm(df$crime_rate ~ df$density + factor(df$region))
+  lm_crime_pop_r <- lm(df$crime_rate ~ df$population + factor(df$region))
+  
+  ## does density+GDP per capita vs population+GDP
+  lm_crime_gdppc_dens <- lm(df$crime_rate ~ df$gdp_per_capita + df$density)
+  lm_crime_gdp_pop <- lm(df$crime_rate ~ df$gdp + df$population)
+  
+  ## with region factored in
+  lm_crime_gdppc_dens_r <- lm(df$crime_rate ~ df$gdp_per_capita + df$density + factor(df$region))
+  lm_crime_gdp_pop_r <- lm(df$crime_rate ~ df$gdp + df$population + factor(df$region))
+  
+  message(summary(lm_crime_gdppc))
+  message(summary(lm_crime_gdp))
+  message(summary(lm_crime_gdppc_r))
+  message(summary(lm_crime_gdp_r))
+  message(summary(lm_crime_dens_r))
+  message(summary(lm_crime_pop_r))
+  message(summary(lm_crime_gdppc_dens))
+  message(summary(lm_crime_gdp_pop))
+  message(summary(lm_crime_gdppc_dens_r))
+  message(summary(lm_crime_gdp_pop_r))
+  
+  df3 <- rbind(tidy(lm_crime_gdppc), tidy(lm_crime_gdp), tidy(lm_crime_gdppc_r), tidy(lm_crime_gdp_r), tidy(lm_crime_dens_r), tidy(lm_crime_pop_r), tidy(lm_crime_gdppc_dens), tidy(lm_crime_gdp_pop), tidy(lm_crime_gdppc_dens_r), tidy(lm_crime_gdp_pop_r))
+
+  ## output merged plot
+  r1 <- ggsave('gg_state.png', plot = gg, width = 24, height = 18, units = 'in', dpi = 225)
+  
+  ## output regression results
+  r2 <- write.csv(df3, file = 'state_regressions.csv')
+  
+  ## output data
+  r3 <- write.csv(df, file = "state_stats.csv")
+  return(list(df, r1, r2, r3))
+}
+
+state_stats <- s_stats()
+```
