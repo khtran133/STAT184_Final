@@ -7,32 +7,33 @@ output: html_document
 
 ```{r setup, include=FALSE} 
 knitr::opts_chunk$set(echo = TRUE)
+## install and load these packages
+install.packages("rvest")
+install.packages("data.table")
+install.packages("dplyr") 
+install.packages("tidyr") 
+install.packages("ggplot2") 
+install.packages("reshape2") 
+install.packages("stringr") 
+install.packages("DBI")
+install.packages("tibble")
+install.packages("ggpubr")
+install.packages("broom")
+
+library(rvest)
+library(data.table)
+library(dplyr) 
+library(tidyr) 
+library(ggplot2) 
+library(reshape2) 
+library(stringr) 
+library(DBI)
+library(tibble)
+library(ggpubr)
+library(broom)
 
 ## web scraping function
 s_stats <- function() { 
-  install.packages("rvest")
-  install.packages("data.table")
-  install.packages("dplyr") 
-  install.packages("tidyr") 
-  install.packages("ggplot2") 
-  install.packages("reshape2") 
-  install.packages("stringr") 
-  install.packages("DBI")
-  install.packages("tibble")
-  install.packages("ggpubr")
-  install.packages("broom")
-  
-  library(rvest)
-  library(data.table)
-  library(dplyr) 
-  library(tidyr) 
-  library(ggplot2) 
-  library(reshape2) 
-  library(stringr) 
-  library(DBI)
-  library(tibble)
-  library(ggpubr)
-  library(broom)
   
   s_name <- function(df) {
     s1 <- NULL
