@@ -6,4 +6,6 @@ My final project heavily utilizes web scraping through the rvest package to crea
 
 The function also outputs an image (.png) of all the plots merged into one, a spreadsheet containing the coefficients for all the various regressions run, and a spreadsheet of the data table created through scraping. 
 
-Requirements: The included spreadsheet (state_crime_r.csv) needs to be in the same folder as the R project. Otherwise, the entire function runs with minimal input.
+**Requirements:** 
+* The included spreadsheet (state_crime_r.csv) needs to be in the same folder as the R project.
+* Install and load packages listed at the top of the function.
