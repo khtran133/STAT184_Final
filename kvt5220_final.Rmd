@@ -190,6 +190,8 @@ s_stats <- function() {
   
   ## output data
   r3 <- write.csv(df, file = "state_stats.csv")
+  
+  ## use a list to return multiple objects
   return(list(df, r1, r2, r3))
 }
 
