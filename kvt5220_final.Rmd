@@ -10,6 +10,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## web scraping function
 s_stats <- function() { 
+  install.packages("rvest")
+  install.packages("data.table")
+  install.packages("dplyr") 
+  install.packages("tidyr") 
+  install.packages("ggplot2") 
+  install.packages("reshape2") 
+  install.packages("stringr") 
+  install.packages("DBI")
+  install.packages("tibble")
+  install.packages("ggpubr")
+  install.packages("broom")
+  
   library(rvest)
   library(data.table)
   library(dplyr) 
