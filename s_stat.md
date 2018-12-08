@@ -77,3 +77,5 @@ _s_l_city()_ : Scraping for every states' largest city
 ```
 
 The function _s_l_city()_ functions similarly to the previously mentioned functions, using an xpath (`//table[contains(@class, "vcard")]//a[contains(@href, "largest_cities")]/ancestor::th/following-sibling::td/a`) to extract a string from the designated Wikipedia page.
+
+---
