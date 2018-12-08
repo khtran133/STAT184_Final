@@ -34,7 +34,7 @@ _s_pop_rank()_ : Scraping for every states' population rank (out of 50)
 }
 ```
 
-The function _s_pop_rank()_ functions similarly to _s_name()_, using an xpath (`//table[contains(@class, "vcard")]//th[@scope][text() = "Population"]/following-sibling::td/a`) to extract a string from the designated Wikipedia page.
+The function _s_pop_rank()_ functions similarly to _s_name()_, using an xpath (`//table[contains(@class, "vcard")]//th[@scope][text() = "Population"]/following-sibling::td/a`) and a regex (`[:digit:]{1,2}`) to exclusively extract a string from the designated Wikipedia page that resembles a number one or two digits in length, and converts it to a numeric value.
 
 _s_pop()_ : Scraping for every states' population
 ```s_pop <- function(df) {
@@ -77,5 +77,32 @@ _s_l_city()_ : Scraping for every states' largest city
 ```
 
 The function _s_l_city()_ functions similarly to the previously mentioned functions, using an xpath (`//table[contains(@class, "vcard")]//a[contains(@href, "largest_cities")]/ancestor::th/following-sibling::td/a`) to extract a string from the designated Wikipedia page.
+
+_s_dens_rank()_ : Scraping for every states' population density rank (out of 50)
+```s_dens_rank <- function(df) {
+    s1 <- NULL
+    for (i in 1:nrow(df)) {
+      s2 <- as.numeric(read_html(toString(df[i,1])) %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//td/a[contains(@href, "population_density")]') %>% html_text() %>% str_extract('[:digit:]{1,2}'))
+      s1 <- c(s1, s2)
+      message(s2)
+    }
+    return(s1)
+  }
+  ```
+The function _s_dens()_ functions similarly to the previously mentioned functions, using an xpath (`//table[contains(@class, "vcard")]//td/a[contains(@href, "population_density")]`) and a regex (`[:digit:]{1,2}`) to exclusively extract a string from the designated Wikipedia page that resembles a number one or two digits in length, and converts it to a numeric value.
+
+_s_dens()_ : Scraping for every states' population density
+```s_dens <- function(df) {
+  s1 <- NULL
+  for (i in 1:nrow(df)) {
+    s2 <- as.numeric(read_html(toString(df[i,1])) %>% html_nodes(xpath = '//table[contains(@class, "vcard")]//th[@scope]/a[text() = "Density"]/ancestor::tr/td/text()[1]') %>% html_text() %>% str_extract('[:digit:]{1,3}[.]?[:digit:]{1,2}'))
+    s1 <- c(s1, s2)
+    message(s2)
+  }
+  return(s1)
+}
+```
+The function _s_dens()_ functions similarly to the previously mentioned functions, using an xpath (`//table[contains(@class, "vcard")]//th[@scope]/a[text() = "Density"]/ancestor::tr/td/text()[1]`) and a regex (`[:digit:]{1,3}[.]?[:digit:]{1,2}`) to exclusively extract a string from the designated Wikipedia page that resembles a number with an optional decimal points, and converts it to a numeric value.
+
 
 ---
