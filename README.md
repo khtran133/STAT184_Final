@@ -10,7 +10,7 @@ The *s_stats()* function also outputs an image (*.png*) of all the plots merged 
 
 **Requirements:** 
 * The included spreadsheet (*state_crime_r.csv*) needs to be in the same folder as the R project.
-* Install and load packages listed at the top of the function, shown below.
+* Install and load packages listed at the top of the _.Rmd_ file, shown below.
 
 ```install.packages("rvest")
 install.packages("data.table")
